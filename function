@@ -1,0 +1,55 @@
+def scrape(url,box_css,var_css,btn_css='',n_pages=1):
+  '''Automatatized web scraping with Selenium.
+
+    url: the web page url with {} instead of the page number.
+    box_css: the css selector of the objects.
+    var_css: a dictionary with names and css selectors of the variables.
+    btn_css: the css selector of the show more botton.
+    n_pages: the number of pages to scrape.'''
+  import time
+  t0=time.time()
+  import logging
+  from selenium.webdriver.remote.remote_connection import LOGGER
+  LOGGER.setLevel(logging.WARNING)
+  import selenium
+  opt=selenium.webdriver.ChromeOptions()
+  opt.add_argument('--headless')
+  opt.add_argument('user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36')
+  wd=selenium.webdriver.Chrome('<your_chromedriver_directory>/chromedriver',options=opt)
+  from selenium.webdriver.common.by import By
+  wd.get('chrome://settings/clearBrowserData')
+  wd.get(url)
+  import pandas as pd
+  df=pd.DataFrame()
+  import numpy as np
+  import urllib.request as ur
+  for page_index in range(1,n_pages+1):
+    l0=len(df)
+    m0=sum(df.isnull().any(axis=1))
+    if btn_css=='':
+      if page_index>1:
+        t0=time.time()
+      wd.get(url.replace('{}',str(page_index)))
+      boxes=wd.find_elements(by=By.CSS_SELECTOR,value=box_css)
+    else:
+      if page_index>1:
+        t0=time.time()
+        try:
+          wd.find_element_by_css_selector(btn_css).click()
+          time.sleep(np.random.rand()+1)
+        except:
+          break
+      boxes=wd.find_elements(by=By.CSS_SELECTOR,value=box_css)[l0:]
+    for box in boxes:
+      dfn=pd.DataFrame()
+      for key in var_css.keys():
+        var=box.find_elements(by=By.CSS_SELECTOR,value=var_css[key])
+        if len(var)>0:
+          dfn[key]=[var[0].text]
+      df=pd.concat([df,dfn])
+    l1=len(df)
+    m1=sum(df.isnull().any(axis=1))
+    t1=time.time()
+    m=np.where(m0==m1,'',f' - {m1-m0} missing!')
+    print(f'{page_index}/{n_pages} - {round(t1-t0,1)} sec - {l1-l0}/{l1} added{m}')
+  return df.reset_index(drop=True)
