@@ -1,11 +1,10 @@
 def scrape(url,box_css,var_css,btn_css='',n_pages=1):
   '''Automatatized web scraping with Selenium.
-
-    url: the web page url with {} instead of the page number.
-    box_css: the css selector of the objects.
-    var_css: a dictionary with names and css selectors of the variables.
-    btn_css: the css selector of the show more botton.
-    n_pages: the number of pages to scrape.'''
+      url: the web page url with {} instead of the page number.
+      box_css: the css selector of the objects.
+      var_css: a dictionary with names and css selectors of the variables.
+      btn_css: the css selector of the show more botton.
+      n_pages: the number of pages to scrape.'''
   import time
   t0=time.time()
   import logging
